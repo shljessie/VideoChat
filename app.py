@@ -55,3 +55,41 @@ async def process_image(request: Request):
     except Exception as e:
         print("Error:", str(e))
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/process-question")
+async def process_question(request: Request):
+    try:
+        data = await request.json()
+        base64_image = data.get("image")
+        question = data.get("question")
+        if not base64_image or not question:
+            raise HTTPException(status_code=400, detail="Image and question are required.")
+        
+        image_data_url = f"data:image/jpeg;base64,{base64_image}"
+
+        messages = [
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": "You are describing this image to a blind and low vision user. What is in this image? Can you describe it?",
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": image_data_url},
+                    },
+                ],
+            }
+        ]
+
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=messages,
+        )
+
+        answer = response.choices[0].message.content
+        return JSONResponse({"answer": answer})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

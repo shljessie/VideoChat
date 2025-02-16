@@ -16,7 +16,7 @@
       display: block;
       border: 1px solid #ddd;
     }
-    #description {
+    #description, #answer {
       margin-top: 20px;
       font-weight: bold;
     }
@@ -26,8 +26,10 @@
   <h1>Video Chat: Video Assistant Agent for Blind and Low Vision Users</h1>
 
   <p>
-    1. Press ESC to stop reading the description.
-    2. Press D after description has loaded to read it aloud.
+    1. Press ESC to stop reading the description.<br>
+    2. Press D after description has loaded to read it aloud.<br>
+    3. Press Q to ask a question using voice input.<br>
+    4. Press SPACE to play/pause the video.
   </p>
 
   <!-- Video Player -->
@@ -41,12 +43,17 @@
 
   <!-- Description Output -->
   <div id="description">Description will appear here...</div>
+  <div id="answer">Answer will appear here...</div>
 
   <script>
     const video = document.getElementById("videoPlayer");
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
     const descriptionDiv = document.getElementById("description");
+    const answerDiv = document.getElementById("answer");
+    let currentBase64Image = null;
+    let speechUtterance = null;
+    let recognition = null;
 
     // Event Listener: Extract frame when video is paused
     video.addEventListener("pause", async () => {
@@ -60,10 +67,10 @@
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
           // Convert canvas content to Base64 (image format)
-          const base64Image = canvas.toDataURL("image/jpeg").split(",")[1]; // Remove the prefix
+          currentBase64Image = canvas.toDataURL("image/jpeg").split(",")[1]; // Remove the prefix
 
           // Send the Base64 image to the backend for processing
-          const description = await getDescriptionFromBackend(base64Image);
+          const description = await getDescriptionFromBackend(currentBase64Image);
           descriptionDiv.textContent = description || "Failed to generate description.";
         } catch (error) {
           console.error("Error capturing frame:", error);
@@ -99,8 +106,8 @@
     function readDescriptionAloud() {
       const description = descriptionDiv.textContent;
       if (description && description !== "Description will appear here...") {
-        const utterance = new SpeechSynthesisUtterance(description);
-        window.speechSynthesis.speak(utterance);
+        speechUtterance = new SpeechSynthesisUtterance(description);
+        window.speechSynthesis.speak(speechUtterance);
       } else {
         console.error("No description available to read.");
       }
@@ -111,14 +118,103 @@
       window.speechSynthesis.cancel();
     }
 
-    // Event Listener: Listen for key presses to trigger actions
-    document.addEventListener("keydown", (event) => {
-      if (event.key.toLowerCase() === "d") {
-        readDescriptionAloud(); // Start reading when "D" is pressed
-      } else if (event.key === "Escape") {
-        stopDescriptionReading(); // Stop reading when "Esc" is pressed
+    // Function to process voice input (speech recognition)
+    function startVoiceRecognition() {
+      if (!currentBase64Image) {
+        alert("Pause the video first to capture a keyframe.");
+        return;
       }
-    });
+
+      // Check if the browser supports SpeechRecognition
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("Speech recognition is not supported in this browser.");
+        return;
+      }
+
+      recognition = new SpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        console.log("Voice recognition started. Speak now...");
+      };
+
+      recognition.onresult = async (event) => {
+        const question = event.results[0][0].transcript;
+        console.log("Recognized Question:", question);
+        answerDiv.textContent = "Processing your question...";
+        
+        // Send the question to the API
+        const answer = await askQuestion(currentBase64Image, question);
+        answerDiv.textContent = answer;
+        readAnswerAloud(answer);
+      };
+
+      recognition.onerror = (event) => {
+        console.error("Speech recognition error:", event.error);
+        answerDiv.textContent = "Error recognizing speech. Try again.";
+      };
+
+      recognition.start();
+    }
+
+    // Function to ask a question about the frame
+    async function askQuestion(base64Image, question) {
+      try {
+        const response = await fetch("/process-question", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ image: base64Image, question }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Error fetching answer from backend.");
+        }
+
+        const data = await response.json();
+        return data.answer || "No answer available.";
+      } catch (error) {
+        console.error("Error:", error);
+        return "Error generating answer.";
+      }
+    }
+
+    // Function to read aloud the answer
+    function readAnswerAloud(answer) {
+      if (speechUtterance) {
+        window.speechSynthesis.cancel(); // Stop any ongoing speech
+      }
+      speechUtterance = new SpeechSynthesisUtterance(answer);
+      window.speechSynthesis.speak(speechUtterance);
+    }
+
+  // Event Listener: Keyboard actions
+  document.addEventListener("keydown", (event) => {
+    if (event.key.toLowerCase() === "d") {
+      readDescriptionAloud(); // Start reading when "D" is pressed
+    } else if (event.key.toLowerCase() === "q") {
+      startVoiceRecognition(); // Start voice recognition when "Q" is pressed
+    } else if (event.key === "Escape") {
+      stopDescriptionReading(); // Stop speech when "Esc" is pressed
+    } else if (event.code === "Space") {
+      event.preventDefault(); // Prevent page scrolling when pressing Space
+      toggleVideoPlayPause();
+    }
+  });
+
+  // Function to toggle play/pause when spacebar is pressed
+  function toggleVideoPlayPause() {
+    if (video.paused) {
+      video.play();
+    } else {
+      video.pause();
+    }
+  }
+
   </script>
 </body>
 </html>
