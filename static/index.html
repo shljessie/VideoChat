@@ -195,12 +195,16 @@
   // Event Listener: Keyboard actions
   document.addEventListener("keydown", (event) => {
     if (event.key.toLowerCase() === "d") {
+      console.log("Reading description aloud...");
       readDescriptionAloud(); // Start reading when "D" is pressed
     } else if (event.key.toLowerCase() === "q") {
+      console.log("Starting Voice Recognition...");
       startVoiceRecognition(); // Start voice recognition when "Q" is pressed
     } else if (event.key === "Escape") {
+      console.log("Stopping Speech...");
       stopDescriptionReading(); // Stop speech when "Esc" is pressed
     } else if (event.code === "Space") {
+      console.log("Pausing Video...");
       event.preventDefault(); // Prevent page scrolling when pressing Space
       toggleVideoPlayPause();
     }
