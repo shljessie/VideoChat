@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Chat: Video Assistant Agent for Blind and Low Vision Users</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 50px;
+    }
+    video, canvas {
+      margin: 20px auto;
+      display: block;
+      border: 1px solid #ddd;
+    }
+    #description {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Video Chat: Video Assistant Agent for Blind and Low Vision Users</h1>
+
+  <p>
+    1. Press ESC to stop reading the description.
+    2. Press D after description has loaded to read it aloud.
+  </p>
+
+  <!-- Video Player -->
+  <video id="videoPlayer" width="640" height="360" controls crossorigin="anonymous">
+    <source src="/static/video.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+
+  <!-- Canvas for Keyframe -->
+  <canvas id="canvas"></canvas>
+
+  <!-- Description Output -->
+  <div id="description">Description will appear here...</div>
+
+  <script>
+    const video = document.getElementById("videoPlayer");
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const descriptionDiv = document.getElementById("description");
+
+    // Event Listener: Extract frame when video is paused
+    video.addEventListener("pause", async () => {
+      if (video.paused) {
+        try {
+          // Set fixed canvas dimensions
+          canvas.width = 640;
+          canvas.height = 360;
+
+          // Draw the current video frame onto the canvas
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+          // Convert canvas content to Base64 (image format)
+          const base64Image = canvas.toDataURL("image/jpeg").split(",")[1]; // Remove the prefix
+
+          // Send the Base64 image to the backend for processing
+          const description = await getDescriptionFromBackend(base64Image);
+          descriptionDiv.textContent = description || "Failed to generate description.";
+        } catch (error) {
+          console.error("Error capturing frame:", error);
+          descriptionDiv.textContent = "Error generating description.";
+        }
+      }
+    });
+
+    // Function to send the image to the backend API
+    async function getDescriptionFromBackend(base64Image) {
+      try {
+        const response = await fetch("/process-image", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ image: base64Image }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Error fetching description from backend.");
+        }
+
+        const data = await response.json();
+        return data.description || "No description available.";
+      } catch (error) {
+        console.error("Error:", error);
+        return "Error generating description.";
+      }
+    }
+
+    // Function to read the description aloud
+    function readDescriptionAloud() {
+      const description = descriptionDiv.textContent;
+      if (description && description !== "Description will appear here...") {
+        const utterance = new SpeechSynthesisUtterance(description);
+        window.speechSynthesis.speak(utterance);
+      } else {
+        console.error("No description available to read.");
+      }
+    }
+
+    // Function to stop speech synthesis
+    function stopDescriptionReading() {
+      window.speechSynthesis.cancel();
+    }
+
+    // Event Listener: Listen for key presses to trigger actions
+    document.addEventListener("keydown", (event) => {
+      if (event.key.toLowerCase() === "d") {
+        readDescriptionAloud(); // Start reading when "D" is pressed
+      } else if (event.key === "Escape") {
+        stopDescriptionReading(); // Stop reading when "Esc" is pressed
+      }
+    });
+  </script>
+</body>
+</html>
