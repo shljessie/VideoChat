@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Video Chat: Video Assistant Agent for Blind and Low Vision Users</title>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -55,21 +57,64 @@
     let speechUtterance = null;
     let recognition = null;
 
+    const beepTimes = [18, 45, 57]; // Beep timestamps in seconds
+    const missedBeepMessages = {
+      18: "The filter button is here.",
+      45: "Where do I go to see saved photos? Or a little before, the person doesn’t verbally describe that they’re tapping somewhere else on the screen at all.",
+      57: "how do i change the intensity, where is the slider",
+    };
+    let playedBeeps = new Set();
+    let lastBeepTime = null; // Track last beep time
+
+    // Tone.js synth for beep
+    const synth = new Tone.Synth({
+      oscillator: { type: "sine" }
+    }).toDestination();
+
+    function playBeep() {
+      Tone.start();
+      synth.triggerAttackRelease("C6", "8n"); // Short beep sound
+    }
+
+    function notifyMissedBeep(beepTime) {
+      if (missedBeepMessages[beepTime]) {
+        window.speechSynthesis.cancel(); // Stop any ongoing speech
+        const message = missedBeepMessages[beepTime];
+        const utterance = new SpeechSynthesisUtterance(message);
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    // Listen for video time updates to play beep
+    video.addEventListener("timeupdate", () => {
+      const currentTime = Math.floor(video.currentTime);
+
+      if (beepTimes.includes(currentTime) && !playedBeeps.has(currentTime)) {
+        playBeep();
+        playedBeeps.add(currentTime);
+        lastBeepTime = currentTime; // Store last beep timestamp
+      }
+    });
+
+    // Detect when the user pauses the video
+    video.addEventListener("pause", () => {
+      if (lastBeepTime !== null) {
+        const currentTime = Math.floor(video.currentTime);
+        if (currentTime >= lastBeepTime + 2 && currentTime <= lastBeepTime + 3) {
+          notifyMissedBeep(lastBeepTime);
+        }
+      }
+    });
+
     // Event Listener: Extract frame when video is paused
     video.addEventListener("pause", async () => {
       if (video.paused) {
         try {
-          // Set fixed canvas dimensions
           canvas.width = 640;
           canvas.height = 360;
-
-          // Draw the current video frame onto the canvas
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          currentBase64Image = canvas.toDataURL("image/jpeg").split(",")[1];
 
-          // Convert canvas content to Base64 (image format)
-          currentBase64Image = canvas.toDataURL("image/jpeg").split(",")[1]; // Remove the prefix
-
-          // Send the Base64 image to the backend for processing
           const description = await getDescriptionFromBackend(currentBase64Image);
           descriptionDiv.textContent = description || "Failed to generate description.";
         } catch (error) {
@@ -79,20 +124,15 @@
       }
     });
 
-    // Function to send the image to the backend API
     async function getDescriptionFromBackend(base64Image) {
       try {
         const response = await fetch("/process-image", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ image: base64Image }),
         });
 
-        if (!response.ok) {
-          throw new Error("Error fetching description from backend.");
-        }
+        if (!response.ok) throw new Error("Error fetching description from backend.");
 
         const data = await response.json();
         return data.description || "No description available.";
@@ -102,7 +142,6 @@
       }
     }
 
-    // Function to read the description aloud
     function readDescriptionAloud() {
       const description = descriptionDiv.textContent;
       if (description && description !== "Description will appear here...") {
@@ -113,19 +152,16 @@
       }
     }
 
-    // Function to stop speech synthesis
     function stopDescriptionReading() {
       window.speechSynthesis.cancel();
     }
 
-    // Function to process voice input (speech recognition)
     function startVoiceRecognition() {
       if (!currentBase64Image) {
         alert("Pause the video first to capture a keyframe.");
         return;
       }
 
-      // Check if the browser supports SpeechRecognition
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
         alert("Speech recognition is not supported in this browser.");
@@ -145,8 +181,7 @@
         const question = event.results[0][0].transcript;
         console.log("Recognized Question:", question);
         answerDiv.textContent = "Processing your question...";
-        
-        // Send the question to the API
+
         const answer = await askQuestion(currentBase64Image, question);
         answerDiv.textContent = answer;
         readAnswerAloud(answer);
@@ -160,20 +195,15 @@
       recognition.start();
     }
 
-    // Function to ask a question about the frame
     async function askQuestion(base64Image, question) {
       try {
         const response = await fetch("/process-question", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ image: base64Image, question }),
         });
 
-        if (!response.ok) {
-          throw new Error("Error fetching answer from backend.");
-        }
+        if (!response.ok) throw new Error("Error fetching answer from backend.");
 
         const data = await response.json();
         return data.answer || "No answer available.";
@@ -183,41 +213,11 @@
       }
     }
 
-    // Function to read aloud the answer
     function readAnswerAloud(answer) {
-      if (speechUtterance) {
-        window.speechSynthesis.cancel(); // Stop any ongoing speech
-      }
+      window.speechSynthesis.cancel();
       speechUtterance = new SpeechSynthesisUtterance(answer);
       window.speechSynthesis.speak(speechUtterance);
     }
-
-  // Event Listener: Keyboard actions
-  document.addEventListener("keydown", (event) => {
-    if (event.key.toLowerCase() === "d") {
-      console.log("Reading description aloud...");
-      readDescriptionAloud(); // Start reading when "D" is pressed
-    } else if (event.key.toLowerCase() === "q") {
-      console.log("Starting Voice Recognition...");
-      startVoiceRecognition(); // Start voice recognition when "Q" is pressed
-    } else if (event.key === "Escape") {
-      console.log("Stopping Speech...");
-      stopDescriptionReading(); // Stop speech when "Esc" is pressed
-    } else if (event.code === "Space") {
-      console.log("Pausing Video...");
-      event.preventDefault(); // Prevent page scrolling when pressing Space
-      toggleVideoPlayPause();
-    }
-  });
-
-  // Function to toggle play/pause when spacebar is pressed
-  function toggleVideoPlayPause() {
-    if (video.paused) {
-      video.play();
-    } else {
-      video.pause();
-    }
-  }
 
   </script>
 </body>
