@@ -81,7 +81,7 @@
 
     const beepTimes = [18, 45, 57];
     const missedBeepMessages = {
-      18: "The filter button is here.",
+      18: "The filter button is the last icon in the scrollable row of circular buttons above the shutter; it looks like three overlapping circles. you can locate the icons by swiping up from the shutter button location.",
       45: "Where do I go to see saved photos? Or a little before, the person doesn’t verbally describe that they’re tapping somewhere else on the screen at all.",
       57: "How do I change the intensity? Where is the slider?",
     };
@@ -119,7 +119,7 @@
     video.addEventListener("pause", () => {
       if (lastBeepTime !== null) {
         const currentTime = Math.floor(video.currentTime);
-        if (currentTime >= lastBeepTime + 2 && currentTime <= lastBeepTime + 3) {
+        if (currentTime >= lastBeepTime && currentTime <= lastBeepTime + 3) {
           notifyMissedBeep(lastBeepTime);
         }
       }
@@ -222,6 +222,17 @@
       window.speechSynthesis.cancel();
       speechUtterance = new SpeechSynthesisUtterance(answer);
       window.speechSynthesis.speak(speechUtterance);
+    }
+
+      // Function to read the description aloud
+      function readDescriptionAloud() {
+      const description = descriptionDiv.textContent;
+      if (description && description !== "Description will appear here...") {
+        speechUtterance = new SpeechSynthesisUtterance(description);
+        window.speechSynthesis.speak(speechUtterance);
+      } else {
+        console.error("No description available to read.");
+      }
     }
 
     // Keyboard controls

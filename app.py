@@ -74,7 +74,7 @@ async def process_question(request: Request):
                 "content": [
                     {
                         "type": "text",
-                        "text": "You are describing this image to a blind and low vision user. What is in this image? Can you describe it?",
+                        "text": "This is the user's question: {question}. Answer in a succinct manner.".format(question=question),
                     },
                     {
                         "type": "image_url",
