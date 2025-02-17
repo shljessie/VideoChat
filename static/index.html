@@ -3,35 +3,57 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Video Chat: Video Assistant Agent for Blind and Low Vision Users</title>
+  <title>Video Agent for BLV users</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin-top: 50px;
-    }
-    video, canvas {
-      margin: 20px auto;
-      display: block;
-      border: 1px solid #ddd;
-    }
-    #description, #answer {
-      margin-top: 20px;
-      font-weight: bold;
-    }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+    text-align: start;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    width: 40%;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f9f9f9;
+    padding-bottom: 80px;
+  }
+
+  .container {
+    width: 60%;
+    max-width: 800px;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: start;
+  }
+
+  video, canvas {
+    width: 100%;
+    margin: 20px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+
+  #description, #answer {
+    margin-top: 20px;
+    font-weight: bold;
+  }
   </style>
+
 </head>
 <body>
-  <h1>Video Chat: Video Assistant Agent for Blind and Low Vision Users</h1>
 
+  <!-- Video Title and Description -->
+  <h2>Video Title: ANY iPhone How To Add Filter on Camera</h2>
   <p>
-    1. Press ESC to stop reading the description.<br>
-    2. Press D after description has loaded to read it aloud.<br>
-    3. Press Q to ask a question using voice input.<br>
-    4. Press SPACE to play/pause the video.
+    iPhone camera filter | How to add filter on iPhone camera! 
+    Learn how to add a filter to your iPhone camera in this tutorial.
   </p>
 
   <!-- Video Player -->
@@ -57,46 +79,43 @@
     let speechUtterance = null;
     let recognition = null;
 
-    const beepTimes = [18, 45, 57]; // Beep timestamps in seconds
+    const beepTimes = [18, 45, 57];
     const missedBeepMessages = {
       18: "The filter button is here.",
       45: "Where do I go to see saved photos? Or a little before, the person doesn’t verbally describe that they’re tapping somewhere else on the screen at all.",
-      57: "how do i change the intensity, where is the slider",
+      57: "How do I change the intensity? Where is the slider?",
     };
     let playedBeeps = new Set();
-    let lastBeepTime = null; // Track last beep time
+    let lastBeepTime = null;
 
     // Tone.js synth for beep
-    const synth = new Tone.Synth({
-      oscillator: { type: "sine" }
-    }).toDestination();
+    const synth = new Tone.Synth({ oscillator: { type: "sine" } }).toDestination();
 
     function playBeep() {
       Tone.start();
-      synth.triggerAttackRelease("C6", "8n"); // Short beep sound
+      synth.triggerAttackRelease("C6", "8n");
     }
 
     function notifyMissedBeep(beepTime) {
       if (missedBeepMessages[beepTime]) {
-        window.speechSynthesis.cancel(); // Stop any ongoing speech
+        window.speechSynthesis.cancel();
         const message = missedBeepMessages[beepTime];
         const utterance = new SpeechSynthesisUtterance(message);
         window.speechSynthesis.speak(utterance);
       }
     }
 
-    // Listen for video time updates to play beep
+    // Play beep at specific times
     video.addEventListener("timeupdate", () => {
       const currentTime = Math.floor(video.currentTime);
-
       if (beepTimes.includes(currentTime) && !playedBeeps.has(currentTime)) {
         playBeep();
         playedBeeps.add(currentTime);
-        lastBeepTime = currentTime; // Store last beep timestamp
+        lastBeepTime = currentTime;
       }
     });
 
-    // Detect when the user pauses the video
+    // Detect when the user pauses within 2-3 seconds of a beep
     video.addEventListener("pause", () => {
       if (lastBeepTime !== null) {
         const currentTime = Math.floor(video.currentTime);
@@ -106,7 +125,7 @@
       }
     });
 
-    // Event Listener: Extract frame when video is paused
+    // Extract frame when video is paused
     video.addEventListener("pause", async () => {
       if (video.paused) {
         try {
@@ -140,20 +159,6 @@
         console.error("Error:", error);
         return "Error generating description.";
       }
-    }
-
-    function readDescriptionAloud() {
-      const description = descriptionDiv.textContent;
-      if (description && description !== "Description will appear here...") {
-        speechUtterance = new SpeechSynthesisUtterance(description);
-        window.speechSynthesis.speak(speechUtterance);
-      } else {
-        console.error("No description available to read.");
-      }
-    }
-
-    function stopDescriptionReading() {
-      window.speechSynthesis.cancel();
     }
 
     function startVoiceRecognition() {
@@ -218,6 +223,26 @@
       speechUtterance = new SpeechSynthesisUtterance(answer);
       window.speechSynthesis.speak(speechUtterance);
     }
+
+    // Keyboard controls
+    document.addEventListener("keydown", (event) => {
+      if (event.key.toLowerCase() === "d") {
+        readDescriptionAloud();
+      } else if (event.key.toLowerCase() === "a") {
+        startVoiceRecognition();
+      } else if (event.key === "Escape") {
+        window.speechSynthesis.cancel();
+      } else if (event.code === "Space") {
+        event.preventDefault();
+        video.paused ? video.play() : video.pause();
+      }
+    });
+
+    // Initial screen reader message
+    const initialMessage = new SpeechSynthesisUtterance(
+      "Welcome! For the best experience, consider turning off your screen reader. This assistant will provide spoken descriptions automatically."
+    );
+    window.speechSynthesis.speak(initialMessage);
 
   </script>
 </body>
