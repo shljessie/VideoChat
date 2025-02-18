@@ -4,6 +4,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from openai import OpenAI
 
+
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 print("API Key:", os.getenv("OPENAI_API_KEY"))  # Debugging
 
