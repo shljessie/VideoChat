@@ -1,4 +1,4 @@
-# Video Chat: Video Assistant Agent for Blind and Low Vision Users
+# Vidi: Video Assistant Agent for Blind and Low Vision Users
 
 This project is a FastAPI application paired with a front-end interface that allows users to interact with video frames. It provides the ability to:
 

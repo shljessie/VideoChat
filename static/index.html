@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Video Agent for BLV users</title>
+  <title>Vidi: Video Agent for BLV users</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
@@ -50,7 +50,7 @@
 <body>
 
   <!-- Video Title and Description -->
-  <h2>Video Title: ANY iPhone How To Add Filter on Camera</h2>
+  <h2>ANY iPhone How To Add Filter on Camera</h2>
   <p>
     iPhone camera filter | How to add filter on iPhone camera! 
     Learn how to add a filter to your iPhone camera in this tutorial.
@@ -79,6 +79,15 @@
     let speechUtterance = null;
     let recognition = null;
 
+    function toggleVideoPlayback() {
+      if (video.paused) {
+        video.play();
+      } else {
+        video.pause();
+        speak("Video paused.");
+      }
+    }
+
     const beepTimes = [18, 47];
     const missedBeepMessages = {
       18: "The filter button is the last icon in the scrollable row of circular buttons above the shutter; it looks like three overlapping circles. you can locate the icons by swiping up from the shutter button location.",
@@ -86,6 +95,7 @@
     };
     let playedBeeps = new Set();
     let lastBeepTime = null;
+    let pendingBeepTime = null;
 
     // Tone.js synth for beep
     const synth = new Tone.Synth({ oscillator: { type: "sine" } }).toDestination();
@@ -114,15 +124,29 @@
       }
     });
 
-    // Detect when the user pauses within 2-3 seconds of a beep
+    // Detect when the user pauses within 4 seconds of a beep
     video.addEventListener("pause", () => {
       if (lastBeepTime !== null) {
         const currentTime = Math.floor(video.currentTime);
-        if (currentTime >= lastBeepTime && currentTime <= lastBeepTime + 3) {
-          notifyMissedBeep(lastBeepTime);
+        if (currentTime >= lastBeepTime && currentTime <= lastBeepTime + 4) {
+          pendingBeepTime = lastBeepTime;
+          speak("Press the keyboard key B as in Boy to hear the beep description");
         }
       }
     });
+
+    // Listen for "B" key to trigger the beep description
+    document.addEventListener("keydown", (event) => {
+      if (event.key.toLowerCase() === "b") {
+        if (pendingBeepTime !== null && missedBeepMessages[pendingBeepTime]) {
+          notifyMissedBeep(pendingBeepTime);
+          pendingBeepTime = null; // Reset after speaking
+        } else {
+          speak("No additional information available for this moment.");
+        }
+      }
+    });
+
 
     // Extract frame when video is paused
     video.addEventListener("pause", async () => {
@@ -160,15 +184,29 @@
       }
     }
 
+    // Function to announce the mode and then play the beep
+    function announceAndBeep() {
+        const message = "Asking question mode: Please ask a question now after the beep.";
+        const utterance = new SpeechSynthesisUtterance(message);
+
+        // When speech ends, play the beep
+        utterance.onend = () => {
+            playBeep();
+        };
+
+        // Speak the message
+        speechSynthesis.speak(utterance);
+    }
+
     function startVoiceRecognition() {
       if (!currentBase64Image) {
-        alert("Pause the video first to capture a keyframe.");
+        speak("Pause the video first to capture a keyframe.");
         return;
       }
 
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
-        alert("Speech recognition is not supported in this browser.");
+        speak("Speech recognition is not supported in this browser.");
         return;
       }
 
@@ -177,26 +215,54 @@
       recognition.continuous = false;
       recognition.interimResults = false;
 
-      recognition.onstart = () => {
-        console.log("Voice recognition started. Speak now...");
-      };
+      announceAndBeep();
 
-      recognition.onresult = async (event) => {
-        const question = event.results[0][0].transcript;
-        console.log("Recognized Question:", question);
-        answerDiv.textContent = "Processing your question...";
+      setTimeout(() => {
+        recognition.start();
+      }, 1500);
 
-        const answer = await askQuestion(currentBase64Image, question);
-        answerDiv.textContent = answer;
-        readAnswerAloud(answer);
+      let recognizedQuestion = "";
+
+      recognition.onresult = (event) => {
+        recognizedQuestion = event.results[0][0].transcript;
+        console.log("Recognized Question:", recognizedQuestion);
+        answerDiv.textContent = `You asked: "${recognizedQuestion}". Press Enter to confirm or Escape to cancel.`;
+        speak(`You asked: ${recognizedQuestion}. Press Enter to confirm or Escape to cancel.`);
       };
 
       recognition.onerror = (event) => {
+        const errorMessage = "Sorry, I couldn't understand. Please try again.";
         console.error("Speech recognition error:", event.error);
-        answerDiv.textContent = "Error recognizing speech. Try again.";
+        answerDiv.textContent = errorMessage;
+        speak(errorMessage);
       };
 
-      recognition.start();
+      // Handle confirmation or cancellation
+      document.addEventListener("keydown", async (event) => {
+        if (event.key === "Enter" && recognizedQuestion) {
+
+          answerDiv.textContent = "Processing your question...";
+          // Play processing sound
+          const processingSound = new Audio("/static/sounds/processing.mp3");
+          processingSound.loop = true; // Loop the sound while processing
+          processingSound.play();
+
+          speak("Processing your question.");
+
+          const answer = await askQuestion(currentBase64Image, recognizedQuestion);
+          // Stop the processing sound once the response is loaded
+          if (processingSound) {
+              processingSound.pause();
+              processingSound.currentTime = 0; // Reset to the beginning
+          }
+
+          answerDiv.textContent = answer;
+          readAnswerAloud(answer);
+        } else if (event.key === "Escape") {
+          speak("Question canceled. Try again.");
+          answerDiv.textContent = "Question canceled.";
+        }
+      });
     }
 
     async function askQuestion(base64Image, question) {
@@ -223,16 +289,24 @@
       window.speechSynthesis.speak(speechUtterance);
     }
 
-      // Function to read the description aloud
-      function readDescriptionAloud() {
+    function speak(answer) {
+      window.speechSynthesis.cancel();
+      speechUtterance = new SpeechSynthesisUtterance(answer);
+      window.speechSynthesis.speak(speechUtterance);
+    }
+
+    function readDescriptionAloud() {
       const description = descriptionDiv.textContent;
-      if (description && description !== "Description will appear here...") {
-        speechUtterance = new SpeechSynthesisUtterance(description);
-        window.speechSynthesis.speak(speechUtterance);
+
+      if (description === "Description will appear here..." || description.includes("Processing")) {
+        speak("Wait a moment, the description is loading. Press D again after a few seconds.");
+      } else if (description.includes("Error")) {
+        speak("There is an error. Try going back and pausing again.");
       } else {
-        console.error("No description available to read.");
+        speak(description);
       }
     }
+
 
     // Keyboard controls
     document.addEventListener("keydown", (event) => {
@@ -244,7 +318,7 @@
         window.speechSynthesis.cancel();
       } else if (event.code === "Space") {
         event.preventDefault();
-        video.paused ? video.play() : video.pause();
+        toggleVideoPlayback();
       }
     });
 
