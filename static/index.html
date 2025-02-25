@@ -99,8 +99,9 @@
     const synth = new Tone.Synth({ oscillator: { type: "sine" } }).toDestination();
 
     function playBeep() {
-      Tone.start();
-      synth.triggerAttackRelease("C6", "8n");
+      const beep = new Audio('/static/sounds/beep.mp3');
+      beep.volume = 0.7;
+      beep.play();
     }
 
     function notifyMissedBeep(beepTime) {
