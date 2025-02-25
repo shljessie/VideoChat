@@ -130,22 +130,18 @@
         const currentTime = Math.floor(video.currentTime);
         if (currentTime >= lastBeepTime && currentTime <= lastBeepTime + 4) {
           pendingBeepTime = lastBeepTime;
-          speak("Press the keyboard key B as in Boy to hear the beep description");
+          speak("Press the keyboard key b as in Boy to hear about the beep description.");
         }
       }
     });
 
-    // Listen for "B" key to trigger the beep description
     document.addEventListener("keydown", (event) => {
-      if (event.key.toLowerCase() === "b") {
-        if (pendingBeepTime !== null && missedBeepMessages[pendingBeepTime]) {
-          notifyMissedBeep(pendingBeepTime);
-          pendingBeepTime = null; // Reset after speaking
-        } else {
-          speak("No additional information available for this moment.");
-        }
+      if (event.key.toLowerCase() === "b" && pendingBeepTime !== null) {
+        notifyMissedBeep(pendingBeepTime);
+        pendingBeepTime = null; // Reset after speaking
       }
     });
+
 
 
     // Extract frame when video is paused
