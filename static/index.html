@@ -57,7 +57,7 @@
 
   <!-- Video Player -->
   <video id="videoPlayer" width="640" height="360" controls crossorigin="anonymous">
-    <source src="/static/video.mp4" type="video/mp4">
+    <source src="/static/origami.mp4" type="video/mp4">
     Your browser does not support the video tag.
   </video>
 
@@ -87,9 +87,9 @@
       }
     }
 
-    const beepTimes = [51];
+    const beepTimes = [35];
     const missedBeepMessages = {
-      51: "The person has not explained what rotate like this is. To explain you can rotate it so that one of the corners of the paper is at the top, and the opposite corner points down toward the bottom. The paper will be placed in a diamond shape."
+      35: "The person has not explained what rotate like this is. To explain you can rotate it so that one of the corners of the paper is at the top, and the opposite corner points down toward the bottom. The paper will be placed in a diamond shape."
     };
     let playedBeeps = new Set();
     let lastBeepTime = null;
