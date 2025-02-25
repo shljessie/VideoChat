@@ -12,29 +12,97 @@ app = FastAPI()
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# Full video title
+videoTitle = "How to Make an Origami Heart - Easy Tutorial for Beginners"
+
 # Full video transcript
 videoTranscript = """
-0:00 Here's how you add a filter in iPhone camera app. Let's open up the camera.
-0:02 Camera app so let's open up the camera.
-0:05 But on the newer iPhones, we need to tap on this Arrow here.
-0:07 Then we're going to see the filter icon. It looks like three overlapping circles.
-0:13 Slide across to select whatever filter you would like.
-0:15 whatever filter you would like once you
-0:18 have selected the filter you just tap on
-0:22 the icon here you tap on the Arrow to
-0:26 remove get the picture you would like
-0:28 and take the picture
-0:30 now if you've already taken a picture
-0:33 and you want to add a filter just tap on
-0:36 edit and from here you're can to tap on
-0:39 the filter icon and even though you've
-0:41 already taken the filter you can change
-0:44 the filter like so maybe you liked Vivid
-0:47 and you can also change the intensity by
-0:50 using the slider 100 being the most
-0:53 Vivid zero being the least and of course
-0:56 applies for each mode as well
+0:00
+hello everyone welcome to a new video
+0:03
+today I'm going to teach how to make a
+0:05
+very simple origami heart this is a
+0:08
+traditional model I think it's ideal for
+0:11
+beginners and all we need to make it is
+0:14
+a square of paper you can use any size
+0:17
+and any type I recommend 15x 15 cm 6X 6
+0:23
+in and the first step is to folding half
+0:26
+along both diagonals as letter
+0:28
+x first this
+0:31
+[Music]
+0:35
+one then the
+0:38
+[Music]
+0:47
+opposite now rotate the paper in this
+0:49
+position and fold the top corner to the
+0:53
+middle just like
+0:58
+that now fold this the bottom
+1:01
+corner to the
+1:04
+[Music]
+1:09
+top with this done Let's Fold half of
+1:13
+the bottom Edge to the
+1:16
+middle first here on the right
+1:24
+side and then on the
+1:28
+left
+1:32
+[Music]
+1:35
+right turn the paper over and fold these
+1:39
+two top corners
+1:44
+down fold like this until this
+1:52
+line now let's do the same on the
+1:54
+lateral
+1:57
+Corners first this one
+2:03
+and also the
+2:08
+other with this done our origami heart
+2:12
+is
+2:13
+ready as I said very EAS to make I hope
+2:17
+most have been able to do if you enjoyed
+2:19
+this video don't forget to click on like
+2:21
+button and subscribe to my channel thank
+2:24
+you very much for watching and until the
+2:26
+next
+2:28
+time
+2:38
+[Music]
 """
+
 
 @app.get("/", response_class=HTMLResponse)
 async def index():
@@ -60,7 +128,7 @@ async def process_image(request: Request):
         Avoid using visual terms like 'looks like' or 'appears.' 
         Instead, describe what is present in a way that helps the user understand its function or context. 
         Be concise yet informative enough for the user to act on the information. 
-        The topic of the video is about how to add a filter on an iPhone camera app.
+        The topic of the video is about {videoTitle}.
         The user paused the video at timestamp {video_time} seconds.
 
         Here is the **FULL** video transcript for context:
@@ -119,6 +187,7 @@ async def process_question(request: Request):
         Avoid visual references like 'as seen' or 'looks like.' 
         Instead, describe relevant details in functional terms. 
         When appropriate, include how a screen reader might announce elements in the image. 
+        The topic of the video is about {videoTitle}.
         The user paused the video at timestamp {video_time} seconds.
 
         Here is the **FULL** video transcript for context:
