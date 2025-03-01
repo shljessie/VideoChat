@@ -50,14 +50,14 @@
 <body>
 
   <!-- Video Title and Description -->
-  <h2>Easiest Origami Heart Ever! - Tutorial in English</h2>
+  <h2>How to Make an EASY Paper Airplane in 1 Minute (60 seconds) — Flies REALLY Far</h2>
   <p>
-    In this video I teach how to make a  very easy origami heart, ideal for beginners.
+    Learn how to make an easy paper airplane that flies REALLY far in 1 minute! 
   </p>
 
   <!-- Video Player -->
   <video id="videoPlayer" width="640" height="360" controls crossorigin="anonymous">
-    <source src="/static/origami.mp4" type="video/mp4">
+    <source src="/static/paperplane.mp4" type="video/mp4">
     Your browser does not support the video tag.
   </video>
 
@@ -236,20 +236,9 @@
       document.addEventListener("keydown", async (event) => {
         if (event.key === "Enter" && recognizedQuestion) {
 
-          answerDiv.textContent = "Processing your question...";
-          // Play processing sound
-          const processingSound = new Audio("/static/sounds/processing.mp3");
-          processingSound.loop = true; // Loop the sound while processing
-          processingSound.play();
-
           speak("Processing your question.");
 
           const answer = await askQuestion(currentBase64Image, recognizedQuestion);
-          // Stop the processing sound once the response is loaded
-          if (processingSound) {
-              processingSound.pause();
-              processingSound.currentTime = 0; // Reset to the beginning
-          }
 
           answerDiv.textContent = answer;
           readAnswerAloud(answer);

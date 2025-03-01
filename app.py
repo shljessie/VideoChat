@@ -13,94 +13,83 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Full video title
-videoTitle = "How to Make an Origami Heart - Easy Tutorial for Beginners"
+videoTitle = "How to Make an EASY Paper Airplane in 1 Minute (60 seconds) — Flies REALLY Far"
 
 # Full video transcript
 videoTranscript = """
+Intro
 0:00
-hello everyone welcome to a new video
+in this video I'm going to teach you how
+0:01
+to make this absolutely amazing paper
 0:03
-today I'm going to teach how to make a
-0:05
-very simple origami heart this is a
+airplane that flies over 100 ft and it
+0:06
+is so easy to fold that I'm going to
 0:08
-traditional model I think it's ideal for
-0:11
-beginners and all we need to make it is
-0:14
-a square of paper you can use any size
-0:17
-and any type I recommend 15x 15 cm 6X 6
-0:23
-in and the first step is to folding half
-0:26
-along both diagonals as letter
-0:28
-x first this
+teach you how to make it in literally 60
+0:09
+seconds or less so grab your sheet of
+0:12
+paper it can be 8 1/2 by 11 in or A4
+0:15
+whatever you have on hand and we're
+0:16
+going to begin in 3 2 one go Begin by
+Tutorial
+0:21
+folding it in half like
+0:24
+this open the paper up and you can fold
+0:27
+triangles like this but leave a little
+0:29
+gap between The Edge and the center
 0:31
-[Music]
-0:35
-one then the
+crease do the same thing on the other
+0:34
+side and now fold this edge here to Land
 0:38
-[Music]
+again close to the center crease but not
+0:40
+all the way to it and do the same thing
+0:43
+on the other
 0:47
-opposite now rotate the paper in this
+side and we're going to fold in one more
 0:49
-position and fold the top corner to the
+time just like this making it really
 0:53
-middle just like
+narrow and you want to leave a gap once
+0:55
+again do the same thing on this
 0:58
-that now fold this the bottom
-1:01
-corner to the
-1:04
-[Music]
-1:09
-top with this done Let's Fold half of
-1:13
-the bottom Edge to the
-1:16
-middle first here on the right
-1:24
-side and then on the
+side
+1:00
+just like that and now you can fold this
+1:03
+in half and fold the Wings by taking
+1:06
+this edge here all the way to that
+1:07
+bottom Edge just like that and unfold
+1:11
+that do the same thing on this
+1:14
+side just like that and this is a
+1:17
+finished paper airplane so if you want
+Outro
+1:20
+you can use a little tape to hold that
+1:22
+together but it'll fly well even if you
+1:23
+don't do that so let's see this thing in
 1:28
-left
-1:32
-[Music]
-1:35
-right turn the paper over and fold these
-1:39
-two top corners
-1:44
-down fold like this until this
-1:52
-line now let's do the same on the
-1:54
-lateral
-1:57
-Corners first this one
-2:03
-and also the
-2:08
-other with this done our origami heart
-2:12
-is
-2:13
-ready as I said very EAS to make I hope
-2:17
-most have been able to do if you enjoyed
-2:19
-this video don't forget to click on like
-2:21
-button and subscribe to my channel thank
-2:24
-you very much for watching and until the
-2:26
-next
-2:28
-time
-2:38
-[Music]
+action
+1:37
+for
 """
 
 
