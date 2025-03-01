@@ -112,23 +112,17 @@ async def process_image(request: Request):
         image_data_url = f"data:image/jpeg;base64,{base64_image}"
 
         prompt='''
-        You are describing this image to a blind or low-vision user. 
-        Provide a short, clear, and practical description of the image content. 
-        Avoid using visual terms like 'looks like' or 'appears.' 
-        Instead, describe what is present in a way that helps the user understand its function or context. 
-        Be concise yet informative enough for the user to act on the information. 
+        You are describing a paused moment in a video about {videoTitle} to a blind user. 
+        Avoid visual references like 'as seen' or 'looks like.' or trying to describe something by what it looks like.
+        When appropriate, include how a screen reader might announce elements in the image. 
+        Tailor your response to be aligned to what a blind user might want to know.
         The topic of the video is about {videoTitle}.
         The user paused the video at timestamp {video_time} seconds.
 
         Here is the **FULL** video transcript for context:
         {videoTranscript}
 
-        Here is an example of a good description:
-
-        Example: 'The screen shows a settings menu with five selectable options. The third option, labeled 'Accessibility,' is currently highlighted. 
-        With a screen reader, the user would hear each menu item read aloud as they swipe through, with the currently highlighted option announced as "Accessibility, button, double-tap to select."' 
-        
-        Now, describe the following image:
+        Now, describe the following image within 3  sentences:
         '''
         
         messages = [
@@ -148,7 +142,7 @@ async def process_image(request: Request):
         ]
         
         response = client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-4.5-preview",
             messages=messages,
         )
         
@@ -171,21 +165,19 @@ async def process_question(request: Request):
         image_data_url = f"data:image/jpeg;base64,{base64_image}"
 
         prompt='''
-        You are answering a question based on an image for a blind or low-vision user. 
-        Ensure your response is clear, direct, and useful for someone relying on a screen reader. 
-        Avoid visual references like 'as seen' or 'looks like.' 
-        Instead, describe relevant details in functional terms. 
+        You are answering a question for a blind user who is watching a video about {videoTitle}. 
+        Avoid visual references like 'as seen' or 'looks like.' or trying to describe something by what it looks like.
         When appropriate, include how a screen reader might announce elements in the image. 
-        The topic of the video is about {videoTitle}.
+        Tailor your response to be aligned to what a blind user might want to know.
+        Keep your answer around the topic of {videoTitle}.
         The user paused the video at timestamp {video_time} seconds.
 
         Here is the **FULL** video transcript for context:
         {videoTranscript}
+
+        Now, answer the following question based on this image: '{question}'.
         
-        Example 1: 'The settings menu is open with five options. The third option, labeled 'Accessibility,' is currently selected. A screen reader would announce: 'Accessibility, button, double-tap to select.'' 
-        Example 2: 'The photo gallery shows three recent images. The first image is highlighted. A screen reader would say: 'Photo, 1 of 3, selected. Double-tap to open.'' 
-        
-        Now, answer the following question based on this image: '{question}'."
+        Keep the final answer within 3 sentences."
         '''
 
         messages = [
@@ -205,7 +197,7 @@ async def process_question(request: Request):
         ]
 
         response = client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-4.5-preview",
             messages=messages,
         )
 
