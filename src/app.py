@@ -6,7 +6,6 @@ from openai import OpenAI
 
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-print("API Key:", os.getenv("OPENAI_API_KEY"))  # Debugging
 
 app = FastAPI()
 
