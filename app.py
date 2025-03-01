@@ -164,8 +164,7 @@ async def process_question(request: Request):
         
         image_data_url = f"data:image/jpeg;base64,{base64_image}"
 
-        prompt='''
-        You are answering a question for a blind user who is watching a video about {videoTitle}. 
+        prompt='''You are answering a question for a blind user who is watching a video about {videoTitle}. 
         Avoid visual references like 'as seen' or 'looks like.' or trying to describe something by what it looks like.
         When appropriate, include how a screen reader might announce elements in the image. 
         Tailor your response to be aligned to what a blind user might want to know.

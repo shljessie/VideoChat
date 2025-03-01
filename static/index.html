@@ -87,10 +87,13 @@
       }
     }
 
-    const beepTimes = [35];
+    const beepTimes = [23,38,88];
     const missedBeepMessages = {
-      35: "The person has not explained what rotate like this is. To explain you can rotate it so that one of the corners of the paper is at the top, and the opposite corner points down toward the bottom. The paper will be placed in a diamond shape."
+      23: "Fold the paper vertically in half.",
+      38: "Fold the outer edge of the diagonal part of the outer folded triangle to the middle again, repeating the same motion you just did.",
+      88: "The video demonstrates the paper plane flying about 100 feet into the distance with a perfect arching motion."
     };
+
     let playedBeeps = new Set();
     let lastBeepTime = null;
     let pendingBeepTime = null;
@@ -99,8 +102,8 @@
     const synth = new Tone.Synth({ oscillator: { type: "sine" } }).toDestination();
 
     function playBeep() {
-      const beep = new Audio('/static/sounds/beep.mp3');
-      beep.volume = 0.7;
+      const beep = new Audio('/static/sounds/ding.mp3');
+      beep.volume = 1;
       beep.play();
     }
 
@@ -129,7 +132,7 @@
         const currentTime = Math.floor(video.currentTime);
         if (currentTime >= lastBeepTime && currentTime <= lastBeepTime + 4) {
           pendingBeepTime = lastBeepTime;
-          speak("Press the keyboard key b as in Boy to hear about the beep description.");
+          speak("Press B to hear the beep description.");
         }
       }
     });
