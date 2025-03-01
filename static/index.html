@@ -9,64 +9,72 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 
   <style>
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
-    text-align: start;
-    margin: auto;
-    display: flex;
-    flex-direction: column;
-    width: 40%;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background-color: #f9f9f9;
-    padding-bottom: 80px;
-  }
-
-  .container {
-    width: 60%;
-    max-width: 800px;
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    text-align: start;
-  }
-
-  video, canvas {
-    width: 100%;
-    margin: 20px 0;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-  }
-
-  #description, #answer {
-    margin-top: 20px;
-    font-weight: bold;
-  }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+      text-align: start;
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      width: 80%;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #f9f9f9;
+    }
+    video {
+      margin: 20px 0;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    canvas {
+      width: 100%;
+    }
+    #videoTitle {
+      margin-top: 20px;
+      margin-bottom: 0;
+      text-align: start;
+    }
+    #videoDescription {
+      margin-top: 10px;
+      text-align: start;
+    }
+    #layoutContainer {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      gap: 10%;
+      align-items: center;
+      width: 100%;
+    }
+    #descriptionContainer {
+      margin-top: 20px;
+      font-weight: bold;
+      width: 100%;
+      text-align: start;
+    }
   </style>
 
 </head>
 <body>
 
-  <!-- Video Title and Description -->
-  <h2>How to Make an EASY Paper Airplane in 1 Minute (60 seconds) — Flies REALLY Far</h2>
-  <p>
-    Learn how to make an easy paper airplane that flies REALLY far in 1 minute! 
-  </p>
+    <h4 id="videoTitle">How to Make an EASY Paper Airplane in 1 Minute (60 seconds) — Flies REALLY Far</h4>
+    <p id="videoDescription">Learn how to make an easy paper airplane that flies REALLY far in 1 minute!</p>
+    <div id="layoutContainer">
+      <div id="videoContainer">
+        <video id="videoPlayer" width="640" height="360" controls crossorigin="anonymous">
+          <source src="/static/paperplane.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+      <div id="snapshotContainer">
+        <canvas id="canvas"></canvas>
+      </div>
+    </div>
+    <div id="descriptionContainer">
+      <div id="description"></div>
+      <div id="answer"></div>
+    </div>
 
-  <!-- Video Player -->
-  <video id="videoPlayer" width="640" height="360" controls crossorigin="anonymous">
-    <source src="/static/paperplane.mp4" type="video/mp4">
-    Your browser does not support the video tag.
-  </video>
-
-  <!-- Canvas for Keyframe -->
-  <canvas id="canvas"></canvas>
-
-  <!-- Description Output -->
-  <div id="description">Description will appear here...</div>
-  <div id="answer">Answer will appear here...</div>
 
   <script>
     const video = document.getElementById("videoPlayer");
@@ -285,7 +293,7 @@
     function readDescriptionAloud() {
       const description = descriptionDiv.textContent;
 
-      if (description === "Description will appear here..." || description.includes("Processing")) {
+      if (description === "" || description.includes("Processing")) {
         speak("Wait a moment, the description is loading. Press D again after a few seconds.");
       } else if (description.includes("Error")) {
         speak("There is an error. Try going back and pausing again.");

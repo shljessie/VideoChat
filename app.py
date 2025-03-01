@@ -109,6 +109,7 @@ async def process_image(request: Request):
         if not base64_image:
             raise HTTPException(status_code=400, detail="No image provided.")
         
+        
         image_data_url = f"data:image/jpeg;base64,{base64_image}"
 
         prompt='''
@@ -123,6 +124,7 @@ async def process_image(request: Request):
         {videoTranscript}
 
         Now, describe the following image within 3  sentences:
+        Include the context of the  {videoTranscript} in yoru description.
         '''
         
         messages = [
