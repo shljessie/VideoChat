@@ -106,6 +106,7 @@ async def process_image(request: Request):
     try:
         data = await request.json()
         base64_image = data.get("image")
+        video_time = data.get("video_time")
         if not base64_image:
             raise HTTPException(status_code=400, detail="No image provided.")
         
@@ -124,16 +125,20 @@ async def process_image(request: Request):
         {videoTranscript}
 
         Now, describe the following image within 3  sentences:
-        Include the context of the  {videoTranscript} in yoru description.
+        Include the context of the {videoTranscript} and the Video Topic in your description.
         '''
-        
+
+        formatted_prompt = prompt.format(videoTitle=videoTitle, video_time=video_time, videoTranscript=videoTranscript)
+
+        print('Prompt:', formatted_prompt)
+
         messages = [
             {
                 "role": "user",
                 "content": [
                     {
                         "type": "text",
-                        "text": prompt,
+                        "text": formatted_prompt,
                     },
                     {
                         "type": "image_url",
@@ -160,6 +165,7 @@ async def process_question(request: Request):
     try:
         data = await request.json()
         base64_image = data.get("image")
+        video_time = data.get("video_time")
         question = data.get("question")
         if not base64_image or not question:
             raise HTTPException(status_code=400, detail="Image and question are required.")
@@ -181,13 +187,23 @@ async def process_question(request: Request):
         Keep the final answer within 3 sentences."
         '''
 
+
+        formatted_prompt = prompt.format(
+            videoTitle=videoTitle,
+            video_time=video_time,
+            videoTranscript=videoTranscript,
+            question=question
+        )
+
+        print('Prompt:', formatted_prompt)
+
         messages = [
             {
                 "role": "user",
                 "content": [
                     {
                         "type": "text",
-                        "text": "This is the user's question: {question}. Answer in a succinct manner.".format(question=question),
+                        "text": formatted_prompt,
                     },
                     {
                         "type": "image_url",

@@ -172,12 +172,12 @@
       }
     });
 
-    async function getDescriptionFromBackend(base64Image) {
+    async function getDescriptionFromBackend(base64Image,videoTime) {
       try {
         const response = await fetch("/process-image", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ image: base64Image }),
+          body: JSON.stringify({ image: base64Image , video_time: videoTime }),
         });
 
         if (!response.ok) throw new Error("Error fetching description from backend.");
@@ -260,12 +260,12 @@
       });
     }
 
-    async function askQuestion(base64Image, question) {
+    async function askQuestion(base64Image, question,videoTime) {
       try {
         const response = await fetch("/process-question", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ image: base64Image, question }),
+          body: JSON.stringify({ image: base64Image, question, video_time: videoTime }),
         });
 
         if (!response.ok) throw new Error("Error fetching answer from backend.");
