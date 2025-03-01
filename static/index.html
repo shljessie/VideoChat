@@ -190,14 +190,20 @@
       }
     }
 
-    // Function to announce the mode and then play the beep
     function announceAndBeep() {
         const message = "Asking question mode: Please ask a question now after the beep.";
         const utterance = new SpeechSynthesisUtterance(message);
 
         // When speech ends, play the beep
         utterance.onend = () => {
-            playBeep();
+            const beep = new Audio('/static/sounds/ding.mp3');
+            beep.volume = 1;
+            beep.play();
+
+            // When the beep ends, start voice recognition
+            beep.onended = () => {
+                recognition.start();
+            };
         };
 
         // Speak the message
@@ -223,10 +229,6 @@
 
       announceAndBeep();
 
-      setTimeout(() => {
-        recognition.start();
-      }, 1500);
-
       let recognizedQuestion = "";
 
       recognition.onresult = (event) => {
@@ -234,30 +236,32 @@
         console.log("Recognized Question:", recognizedQuestion);
         answerDiv.textContent = `You asked: "${recognizedQuestion}". Press Enter to confirm or Escape to cancel.`;
         speak(`You asked: ${recognizedQuestion}. Press Enter to confirm or Escape to cancel.`);
+
+        function handleConfirmation(e) {
+              if (e.key === "Enter" && recognizedQuestion) {
+                  speak("Processing your question.");
+                  askQuestion(currentBase64Image, recognizedQuestion)
+                      .then(answer => {
+                          answerDiv.textContent = answer;
+                          readAnswerAloud(answer);
+                      });
+              } else if (e.key === "Escape") {
+                  speak("Question canceled. Try again.");
+                  answerDiv.textContent = "Question canceled.";
+              }
+              document.removeEventListener("keydown", handleConfirmation);
+          }
+
+          document.addEventListener("keydown", handleConfirmation, { once: true });
       };
 
       recognition.onerror = (event) => {
-        const errorMessage = "Sorry, I couldn't understand. Please try again.";
-        console.error("Speech recognition error:", event.error);
-        answerDiv.textContent = errorMessage;
-        speak(errorMessage);
+          const errorMessage = "Sorry, I couldn't understand. Please try again.";
+          console.error("Speech recognition error:", event.error);
+          answerDiv.textContent = errorMessage;
+          speak(errorMessage);
       };
-
-      // Handle confirmation or cancellation
-      document.addEventListener("keydown", async (event) => {
-        if (event.key === "Enter" && recognizedQuestion) {
-
-          speak("Processing your question.");
-
-          const answer = await askQuestion(currentBase64Image, recognizedQuestion);
-
-          answerDiv.textContent = answer;
-          readAnswerAloud(answer);
-        } else if (event.key === "Escape") {
-          speak("Question canceled. Try again.");
-          answerDiv.textContent = "Question canceled.";
-        }
-      });
+      
     }
 
     async function askQuestion(base64Image, question,videoTime) {
