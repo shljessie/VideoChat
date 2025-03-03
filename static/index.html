@@ -199,11 +199,7 @@
             const beep = new Audio('/static/sounds/ding.mp3');
             beep.volume = 1;
             beep.play();
-
-            // When the beep ends, start voice recognition
-            beep.onended = () => {
-                recognition.start();
-            };
+            recognition.start();
         };
 
         // Speak the message
@@ -261,7 +257,7 @@
           answerDiv.textContent = errorMessage;
           speak(errorMessage);
       };
-      
+
     }
 
     async function askQuestion(base64Image, question,videoTime) {
