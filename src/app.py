@@ -9,7 +9,7 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 app = FastAPI()
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory="src/static"), name="static")
 
 # Full video title
 videoTitle = "How to Make an EASY Paper Airplane in 1 Minute (60 seconds) — Flies REALLY Far"
@@ -95,7 +95,7 @@ for
 @app.get("/", response_class=HTMLResponse)
 async def index():
     try:
-        with open("static/index.html", "r") as f:
+        with open("src/static/index.html", "r") as f:
             return HTMLResponse(f.read())
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Index file not found")
